@@ -13,14 +13,14 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/name"
             app:hintAnimationEnabled="true"
             app:hintEnabled="true">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/txtName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -57,6 +57,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/perform_this_action_via_shortcut" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkbox_lock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lock value (prevent system changes)" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </ScrollView>

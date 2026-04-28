@@ -24,6 +24,8 @@ import com.topjohnwu.superuser.Shell;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import rikka.shizuku.Shizuku;
+
 import java.util.List;
 
 public class EditorUtils {
@@ -55,6 +57,9 @@ public class EditorUtils {
             }
         } else if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
             Shell.cmd("pm grant " + BuildConfig.APPLICATION_ID + " " + permission).exec();
+        }
+        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+            return true;
         }
         return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }

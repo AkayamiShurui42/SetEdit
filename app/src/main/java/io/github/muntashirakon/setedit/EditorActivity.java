@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.content.Context;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -91,10 +92,15 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
 
     public void addNewItemDialog() {
         View editorDialogView = getLayoutInflater().inflate(R.layout.dialog_new, null);
-        EditText keyNameView = editorDialogView.findViewById(R.id.txtName);
+        com.google.android.material.textfield.MaterialAutoCompleteTextView keyNameView = editorDialogView.findViewById(R.id.txtName);
+
+        ArrayAdapter<String> keysAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, io.github.muntashirakon.setedit.adapters.KnownKeys.KNOWN_KEYS);
+        keyNameView.setAdapter(keysAdapter);
+
         EditText keyValueView = editorDialogView.findViewById(R.id.txtValue);
         MaterialCheckBox performOnReboot = editorDialogView.findViewById(R.id.checkbox);
         MaterialCheckBox performViaShortcut = editorDialogView.findViewById(R.id.checkbox_2);
+        MaterialCheckBox performLock = editorDialogView.findViewById(R.id.checkbox_lock);
         if (adapter.canSetOnReboot()) {
             performOnReboot.setVisibility(View.VISIBLE);
         } else performOnReboot.setVisibility(View.GONE);
@@ -109,7 +115,16 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
                     Editable keyName = keyNameView.getText();
                     Editable keyValue = keyValueView.getText();
                     if (TextUtils.isEmpty(keyName) || keyValue == null) return;
-                    adapter.create(keyName.toString(), keyValue.toString());
+
+                    String key = keyName.toString();
+                    String val = keyValue.toString();
+
+                    if (performLock.isChecked()) {
+                        SharedPreferences lockedPrefs = getSharedPreferences("locked_settings", Context.MODE_PRIVATE);
+                        lockedPrefs.edit().putString(key + ":" + EditorUtils.toTableType(adapter.getListType()), val).apply();
+                    }
+
+                    adapter.create(key, val);
                     if (adapter.canSetOnReboot() && performOnReboot.isChecked()) {
                         ActionItem actionItem = new ActionItem(ActionResult.TYPE_CREATE, EditorUtils.toTableType(adapter.getListType()), keyName.toString(), keyValue.toString());
                         BootUtils.add(this, actionItem);

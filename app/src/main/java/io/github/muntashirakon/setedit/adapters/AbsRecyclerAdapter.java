@@ -8,8 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 import android.widget.TextView;
+import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -121,9 +124,20 @@ public abstract class AbsRecyclerAdapter extends RecyclerView.Adapter<AbsRecycle
         View v = View.inflate(context, R.layout.dialog_edit, null);
         v.findViewById(R.id.button_help).setOnClickListener(v2 -> openHelp(keyName));
         ((TextView) v.findViewById(R.id.title)).setText(keyName);
-        TextInputEditText editText = v.findViewById(R.id.txt);
+        AutoCompleteTextView editText = v.findViewById(R.id.txt);
         MaterialCheckBox performOnReboot = v.findViewById(R.id.checkbox);
         MaterialCheckBox performViaShortcut = v.findViewById(R.id.checkbox_2);
+        MaterialCheckBox performLock = v.findViewById(R.id.checkbox_lock);
+        SharedPreferences lockedPrefs = context.getSharedPreferences("locked_settings", Context.MODE_PRIVATE);
+        boolean isLocked = lockedPrefs.contains(keyName + ":" + EditorUtils.toTableType(getListType()));
+        performLock.setChecked(isLocked);
+
+        SharedPreferences prefs = context.getSharedPreferences("value_history_" + keyName, Context.MODE_PRIVATE);
+        String historyStr = prefs.getString("history", "");
+        String[] history = historyStr.isEmpty() ? new String[]{} : historyStr.split("\n");
+        ArrayAdapter<String> historyAdapter = new ArrayAdapter<>(context, android.R.layout.simple_dropdown_item_1line, history);
+        editText.setAdapter(historyAdapter);
+
         boolean canEdit = canEdit();
         boolean canDelete = canDelete();
         editText.setText(keyValue);
@@ -140,7 +154,20 @@ public abstract class AbsRecyclerAdapter extends RecyclerView.Adapter<AbsRecycle
             builder.setPositiveButton(R.string.save, (dialog, which) -> {
                 Editable editable = editText.getText();
                 if (editable == null) return;
-                update(keyName, editable.toString());
+                String newValue = editable.toString();
+
+                SharedPreferences.Editor editor = prefs.edit();
+                if (!historyStr.contains(newValue) && !newValue.isEmpty() && !newValue.equals("null")) {
+                    editor.putString("history", newValue + "\n" + historyStr).apply();
+                }
+
+                if (performLock.isChecked()) {
+                    lockedPrefs.edit().putString(keyName + ":" + EditorUtils.toTableType(getListType()), newValue).apply();
+                } else {
+                    lockedPrefs.edit().remove(keyName + ":" + EditorUtils.toTableType(getListType())).apply();
+                }
+
+                update(keyName, newValue);
                 if (canSetOnReboot() && performOnReboot.isChecked()) {
                     ActionItem actionItem = new ActionItem(ActionResult.TYPE_UPDATE, EditorUtils.toTableType(getListType()), keyName, editable.toString());
                     BootUtils.add(context, actionItem);

@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.WindowCompat;
 
+import android.content.Intent;
+import android.os.Build;
 import com.google.android.material.color.DynamicColors;
 import com.topjohnwu.superuser.Shell;
 
@@ -27,6 +29,13 @@ public class App extends Application {
         DynamicColors.applyToActivitiesIfAvailable(this);
         registerActivityLifecycleCallbacks(new ActivityAppearanceCallback());
         Shell.getShell();
+
+        Intent intent = new Intent(this, io.github.muntashirakon.setedit.boot.SettingsMonitorService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
     }
 
     public static class ActivityAppearanceCallback implements Application.ActivityLifecycleCallbacks {

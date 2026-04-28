@@ -12,6 +12,7 @@ import com.topjohnwu.superuser.Shell;
 
 import io.github.muntashirakon.setedit.EditorUtils;
 import io.github.muntashirakon.setedit.SettingsType;
+import rikka.shizuku.Shizuku;
 
 public final class SettingsUtils {
     @NonNull
@@ -34,6 +35,19 @@ public final class SettingsUtils {
             ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
             r.setLogs(TextUtils.join("\n", result.getErr()));
             return r;
+        } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            try {
+                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
+                if(result.isSuccess()) {
+                     return new ActionResult(ActionResult.TYPE_DELETE, true);
+                } else {
+                     return new ActionResult(ActionResult.TYPE_DELETE, false);
+                }
+            } catch(Exception e) {
+                ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
+                r.setLogs(e.getMessage());
+                return r;
+            }
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) return new ActionResult(ActionResult.TYPE_DELETE, false);
@@ -58,11 +72,28 @@ public final class SettingsUtils {
     private static ActionResult updateInternal(@NonNull Context context, @SettingsType String settingsType,
                                                @NonNull String keyName, @NonNull String newValue,
                                                @ActionResult.ActionType int actionType) {
+        if ("null".equals(newValue)) {
+            // Null just clears value not the key
+            newValue = "";
+        }
         if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
             Shell.Result result = Shell.cmd("settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
             ActionResult r = new ActionResult(actionType, result.isSuccess());
             r.setLogs(TextUtils.join("\n", result.getErr()));
             return r;
+        } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            try {
+                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
+                if(result.isSuccess()) {
+                     return new ActionResult(actionType, true);
+                } else {
+                     return new ActionResult(actionType, false);
+                }
+            } catch(Exception e) {
+                ActionResult r = new ActionResult(actionType, false);
+                r.setLogs(e.getMessage());
+                return r;
+            }
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) return new ActionResult(actionType, false);
