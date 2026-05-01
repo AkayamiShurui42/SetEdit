@@ -52,7 +52,9 @@ public final class SettingsUtils {
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) return new ActionResult(ActionResult.TYPE_DELETE, false);
         if (!isGranted) {
-            EditorUtils.displayGrantPermissionMessage(context);
+            if (context instanceof android.app.Activity) {
+                EditorUtils.displayGrantPermissionMessage(context);
+            }
             return new ActionResult(ActionResult.TYPE_DELETE, false);
         }
         ContentResolver contentResolver = context.getContentResolver();
@@ -98,7 +100,9 @@ public final class SettingsUtils {
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) return new ActionResult(actionType, false);
         if (!isGranted) {
-            EditorUtils.displayGrantPermissionMessage(context);
+            if (context instanceof android.app.Activity) {
+                EditorUtils.displayGrantPermissionMessage(context);
+            }
             return new ActionResult(actionType, false);
         }
         ContentResolver contentResolver = context.getContentResolver();
