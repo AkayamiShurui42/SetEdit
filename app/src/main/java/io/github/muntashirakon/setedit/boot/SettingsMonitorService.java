@@ -26,6 +26,7 @@ import io.github.muntashirakon.setedit.R;
 import io.github.muntashirakon.setedit.SettingsType;
 import io.github.muntashirakon.setedit.TableType;
 import io.github.muntashirakon.setedit.utils.SettingsUtils;
+import rikka.shizuku.Shizuku;
 
 public class SettingsMonitorService extends Service {
     public static final String TAG = "SettingsMonitor";
@@ -35,6 +36,7 @@ public class SettingsMonitorService extends Service {
     private SettingsObserver systemObserver;
     private SettingsObserver secureObserver;
     private SettingsObserver globalObserver;
+    private Shizuku.OnBinderReceivedListener shizukuListener;
 
     @Override
     public void onCreate() {
@@ -57,6 +59,46 @@ public class SettingsMonitorService extends Service {
         getContentResolver().registerContentObserver(Settings.System.CONTENT_URI, true, systemObserver);
         getContentResolver().registerContentObserver(Settings.Secure.CONTENT_URI, true, secureObserver);
         getContentResolver().registerContentObserver(Settings.Global.CONTENT_URI, true, globalObserver);
+
+        shizukuListener = new Shizuku.OnBinderReceivedListener() {
+            @Override
+            public void onBinderReceived() {
+                applyAllLockedSettings();
+            }
+        };
+        try {
+            Shizuku.addBinderReceivedListenerSticky(shizukuListener);
+        } catch (Throwable t) {
+            Log.e(TAG, "Failed to register Shizuku listener", t);
+        }
+    }
+
+    private void applyAllLockedSettings() {
+        SharedPreferences lockedPrefs = getSharedPreferences("locked_settings", Context.MODE_PRIVATE);
+        Map<String, ?> allEntries = lockedPrefs.getAll();
+        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+            String fullKey = entry.getKey();
+            if (fullKey == null || !fullKey.contains(":")) continue;
+
+            String[] parts = fullKey.split(":");
+            if (parts.length != 2) continue;
+
+            String key = parts[0];
+            String tableType = parts[1];
+            String settingsType = null;
+
+            if (TableType.TABLE_SYSTEM.equals(tableType)) {
+                settingsType = SettingsType.SYSTEM_SETTINGS;
+            } else if (TableType.TABLE_SECURE.equals(tableType)) {
+                settingsType = SettingsType.SECURE_SETTINGS;
+            } else if (TableType.TABLE_GLOBAL.equals(tableType)) {
+                settingsType = SettingsType.GLOBAL_SETTINGS;
+            }
+
+            if (settingsType != null) {
+                checkAndRevertSetting(key, settingsType, tableType);
+            }
+        }
     }
 
     @Override
@@ -70,6 +112,13 @@ public class SettingsMonitorService extends Service {
         if (systemObserver != null) getContentResolver().unregisterContentObserver(systemObserver);
         if (secureObserver != null) getContentResolver().unregisterContentObserver(secureObserver);
         if (globalObserver != null) getContentResolver().unregisterContentObserver(globalObserver);
+        if (shizukuListener != null) {
+            try {
+                Shizuku.removeBinderReceivedListener(shizukuListener);
+            } catch (Throwable t) {
+                Log.e(TAG, "Failed to unregister Shizuku listener", t);
+            }
+        }
     }
 
     @Nullable
