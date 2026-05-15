@@ -13,4 +13,5 @@ public @interface TableType {
     String TABLE_ENV = "env";
     String TABLE_BOOT = "boot";
     String TABLE_SHORTCUTS = "shortcuts";
+    String TABLE_LOCKED = "locked";
 }
