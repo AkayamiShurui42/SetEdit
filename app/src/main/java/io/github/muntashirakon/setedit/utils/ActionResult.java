@@ -27,6 +27,6 @@ public class ActionResult {
     }
 
     public String getLogs() {
-        return mLogs;
+        return mLogs == null ? "" : mLogs;
     }
 }
