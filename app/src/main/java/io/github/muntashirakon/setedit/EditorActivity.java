@@ -64,6 +64,7 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
     private AbsRecyclerAdapter adapter;
     private RecyclerView listView;
     private SharedPreferences preferences;
+    private Timer timer;
 
     private final ActivityResultLauncher<String> post21SaveLauncher = registerForActivityResult(
             new ActivityResultContracts.CreateDocument("application/json"),
@@ -178,12 +179,22 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
         // Display warning if it's the first time
         displayOneTimeWarningDialog();
         // Refresh settings after 5 seconds
-        new Timer().schedule(new TimerTask() {
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 runOnUiThread(() -> adapter.refresh());
             }
         }, 5000, 5000);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
     }
 
     @Override

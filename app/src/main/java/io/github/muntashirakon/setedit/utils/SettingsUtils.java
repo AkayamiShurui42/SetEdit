@@ -38,11 +38,7 @@ public final class SettingsUtils {
         } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
                 Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
-                if(result.isSuccess()) {
-                     return new ActionResult(ActionResult.TYPE_DELETE, true);
-                } else {
-                     return new ActionResult(ActionResult.TYPE_DELETE, false);
-                }
+                return new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
             } catch(Exception e) {
                 ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
                 r.setLogs(e.getMessage());
@@ -86,11 +82,7 @@ public final class SettingsUtils {
         } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
                 Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
-                if(result.isSuccess()) {
-                     return new ActionResult(actionType, true);
-                } else {
-                     return new ActionResult(actionType, false);
-                }
+                return new ActionResult(actionType, result.isSuccess());
             } catch(Exception e) {
                 ActionResult r = new ActionResult(actionType, false);
                 r.setLogs(e.getMessage());
