@@ -5,8 +5,10 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ServiceInfo;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -48,7 +50,11 @@ public class SettingsMonitorService extends Service {
                 .setContentText("Monitoring locked settings...")
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .build();
-        startForeground(2, notification);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(2, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } else {
+            startForeground(2, notification);
+        }
 
         handler = new Handler(Looper.getMainLooper());
 
