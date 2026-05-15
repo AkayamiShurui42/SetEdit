@@ -31,20 +31,27 @@ public final class SettingsUtils {
     @NonNull
     public static ActionResult delete(@NonNull Context context, @SettingsType String settingsType,
                                       @NonNull String keyName) {
-        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
-            Shell.Result result = Shell.cmd("settings delete " + settingsType + " " + keyName).exec();
-            ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
-            r.setLogs(TextUtils.join("\n", result.getErr()));
-            return r;
-        } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
                 Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
-                return new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
+                if (result.isSuccess()) {
+                    return new ActionResult(ActionResult.TYPE_DELETE, true);
+                } else {
+                    ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
+                    r.setLogs(TextUtils.join("\n", result.getErr()));
+                    return r;
+                }
             } catch(Exception e) {
                 ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
                 r.setLogs(e.getMessage());
                 return r;
             }
+        }
+        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
+            Shell.Result result = Shell.cmd("settings delete " + settingsType + " " + keyName).exec();
+            ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
+            r.setLogs(TextUtils.join("\n", result.getErr()));
+            return r;
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) return new ActionResult(ActionResult.TYPE_DELETE, false);
@@ -80,20 +87,27 @@ public final class SettingsUtils {
             // Null just clears value not the key
             newValue = "";
         }
-        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
-            Shell.Result result = Shell.cmd("settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
-            ActionResult r = new ActionResult(actionType, result.isSuccess());
-            r.setLogs(TextUtils.join("\n", result.getErr()));
-            return r;
-        } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
                 Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
-                return new ActionResult(actionType, result.isSuccess());
+                if (result.isSuccess()) {
+                    return new ActionResult(actionType, true);
+                } else {
+                    ActionResult r = new ActionResult(actionType, false);
+                    r.setLogs(TextUtils.join("\n", result.getErr()));
+                    return r;
+                }
             } catch(Exception e) {
                 ActionResult r = new ActionResult(actionType, false);
                 r.setLogs(e.getMessage());
                 return r;
             }
+        }
+        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
+            Shell.Result result = Shell.cmd("settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
+            ActionResult r = new ActionResult(actionType, result.isSuccess());
+            r.setLogs(TextUtils.join("\n", result.getErr()));
+            return r;
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) return new ActionResult(actionType, false);
