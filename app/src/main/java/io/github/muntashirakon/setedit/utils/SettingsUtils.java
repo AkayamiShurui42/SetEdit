@@ -33,19 +33,18 @@ public final class SettingsUtils {
                                       @NonNull String keyName) {
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
+                // Try using shizuku binary directly first (works on most setups)
+                Shell.Result result = Shell.cmd("shizuku -c 'settings delete " + settingsType + " " + keyName + "'").exec();
+                if (!result.isSuccess()) {
+                    // Fallback to app_process hack
+                    result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
+                }
                 return new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
             } catch(Exception e) {
                 ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
                 r.setLogs(e.getMessage());
                 return r;
             }
-        }
-        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
-            Shell.Result result = Shell.cmd("settings delete " + settingsType + " " + keyName).exec();
-            ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
-            r.setLogs(TextUtils.join("\n", result.getErr()));
-            return r;
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) {
@@ -87,19 +86,18 @@ public final class SettingsUtils {
         }
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
+                // Try using shizuku binary directly first
+                Shell.Result result = Shell.cmd("shizuku -c 'settings put " + settingsType + " " + keyName + " \"" + newValue + "\"'").exec();
+                if (!result.isSuccess()) {
+                    // Fallback to app_process hack
+                    result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
+                }
                 return new ActionResult(actionType, result.isSuccess());
             } catch(Exception e) {
                 ActionResult r = new ActionResult(actionType, false);
                 r.setLogs(e.getMessage());
                 return r;
             }
-        }
-        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
-            Shell.Result result = Shell.cmd("settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
-            ActionResult r = new ActionResult(actionType, result.isSuccess());
-            r.setLogs(TextUtils.join("\n", result.getErr()));
-            return r;
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
         if (isGranted == null) {
