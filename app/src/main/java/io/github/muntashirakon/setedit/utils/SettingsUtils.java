@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -58,6 +59,11 @@ public final class SettingsUtils {
             String[] strArr = {keyName};
             contentResolver.delete(Uri.parse("content://settings/" + settingsType), "name = ?", strArr);
             return new ActionResult(ActionResult.TYPE_DELETE, true);
+        } catch (SecurityException se) {
+            Log.e("SettingsUtils", "Permission denied for: " + keyName, se);
+            ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
+            r.setLogs("Permission denied for: " + keyName);
+            return r;
         } catch (Throwable th) {
             th.printStackTrace();
             ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
@@ -99,11 +105,24 @@ public final class SettingsUtils {
         }
         ContentResolver contentResolver = context.getContentResolver();
         try {
-            ContentValues contentValues = new ContentValues(2);
-            contentValues.put("name", keyName);
-            contentValues.put("value", newValue);
-            contentResolver.insert(Uri.parse("content://settings/" + settingsType), contentValues);
+            if (SettingsType.SYSTEM_SETTINGS.equals(settingsType)) {
+                android.provider.Settings.System.putString(contentResolver, keyName, newValue);
+            } else if (SettingsType.SECURE_SETTINGS.equals(settingsType)) {
+                android.provider.Settings.Secure.putString(contentResolver, keyName, newValue);
+            } else if (SettingsType.GLOBAL_SETTINGS.equals(settingsType)) {
+                android.provider.Settings.Global.putString(contentResolver, keyName, newValue);
+            } else {
+                ContentValues contentValues = new ContentValues(2);
+                contentValues.put("name", keyName);
+                contentValues.put("value", newValue);
+                contentResolver.insert(Uri.parse("content://settings/" + settingsType), contentValues);
+            }
             return new ActionResult(actionType, true);
+        } catch (SecurityException se) {
+            Log.e("SettingsUtils", "Permission denied for: " + keyName, se);
+            ActionResult r = new ActionResult(actionType, false);
+            r.setLogs("Permission denied for: " + keyName);
+            return r;
         } catch (Throwable th) {
             th.printStackTrace();
             ActionResult r = new ActionResult(actionType, false);
