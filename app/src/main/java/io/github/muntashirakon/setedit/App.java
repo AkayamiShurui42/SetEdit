@@ -13,6 +13,12 @@ import android.content.Intent;
 import android.os.Build;
 import com.google.android.material.color.DynamicColors;
 import com.topjohnwu.superuser.Shell;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.Date;
+
 public class App extends Application {
     static {
         // Set settings before the main shell can be created
