@@ -33,12 +33,14 @@ public final class SettingsUtils {
                                       @NonNull String keyName) {
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
-                if (result.isSuccess()) {
+                String cmd = "settings delete " + settingsType + " " + keyName;
+                java.lang.Process process = Shizuku.newProcess(new String[]{"sh", "-c", cmd}, null, null);
+                int exitCode = process.waitFor();
+                if (exitCode == 0) {
                     return new ActionResult(ActionResult.TYPE_DELETE, true);
                 } else {
                     ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
-                    r.setLogs(TextUtils.join("\n", result.getErr()));
+                    r.setLogs("Shizuku command failed with exit code: " + exitCode);
                     return r;
                 }
             } catch(Exception e) {
@@ -89,12 +91,14 @@ public final class SettingsUtils {
         }
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
-                if (result.isSuccess()) {
+                String cmd = "settings put " + settingsType + " " + keyName + " \"" + newValue + "\"";
+                java.lang.Process process = Shizuku.newProcess(new String[]{"sh", "-c", cmd}, null, null);
+                int exitCode = process.waitFor();
+                if (exitCode == 0) {
                     return new ActionResult(actionType, true);
                 } else {
                     ActionResult r = new ActionResult(actionType, false);
-                    r.setLogs(TextUtils.join("\n", result.getErr()));
+                    r.setLogs("Shizuku command failed with exit code: " + exitCode);
                     return r;
                 }
             } catch(Exception e) {

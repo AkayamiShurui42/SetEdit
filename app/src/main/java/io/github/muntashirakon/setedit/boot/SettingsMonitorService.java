@@ -192,13 +192,22 @@ public class SettingsMonitorService extends Service {
 
             // Only revert if changed
             if (currentValue == null || !currentValue.equals(finalSavedValue)) {
-                Log.i(TAG, "Locked setting changed: " + key + ". Reverting to " + finalSavedValue);
+                Log.i(TAG, "Locked setting changed: " + key + ". Reverting to " + finalSavedValue + " (Current: " + currentValue + ")");
                 handler.postDelayed(() -> {
                     new Thread(() -> {
-                        SettingsUtils.update(SettingsMonitorService.this, settingsType, key, finalSavedValue);
+                        ActionResult result = SettingsUtils.update(SettingsMonitorService.this, settingsType, key, finalSavedValue);
+                        if (!result.successful) {
+                            Log.e(TAG, "Failed to revert locked setting " + key + ": " + result.getLogs());
+                        } else {
+                            Log.i(TAG, "Successfully reverted locked setting: " + key);
+                        }
                     }).start();
                 }, 500); // 0.5s delay to make sure system finishes its update first
+            } else {
+                Log.v(TAG, "Locked setting " + key + " is still correct: " + savedValue);
             }
+        } else {
+            Log.v(TAG, "No saved value for locked setting: " + key);
         }
     }
 }

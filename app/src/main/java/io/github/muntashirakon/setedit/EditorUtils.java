@@ -29,6 +29,8 @@ import rikka.shizuku.Shizuku;
 import java.util.List;
 
 public class EditorUtils {
+    public static final int REQUEST_CODE_SHIZUKU = 1001;
+
     /**
      * Check whether the permission has been granted
      *
@@ -38,6 +40,14 @@ public class EditorUtils {
     public static Boolean checkSettingsPermission(@NonNull Context context, @SettingsType String settingsType) {
         String permission = SettingsType.SYSTEM_SETTINGS.equals(settingsType)
                 ? Manifest.permission.WRITE_SETTINGS : Manifest.permission.WRITE_SECURE_SETTINGS;
+        if (Shizuku.pingBinder()) {
+            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else if (context instanceof android.app.Activity) {
+                Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
+                return null;
+            }
+        }
         if (SettingsType.SYSTEM_SETTINGS.equals(settingsType)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.System.canWrite(context)) {
                 if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
