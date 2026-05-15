@@ -54,9 +54,6 @@ public final class SettingsUtils {
             return r;
         }
         if (!isGranted) {
-            if (context instanceof android.app.Activity) {
-                EditorUtils.displayGrantPermissionMessage(context);
-            }
             ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
             r.setLogs("Permission WRITE_SECURE_SETTINGS missing.");
             return r;
@@ -111,9 +108,6 @@ public final class SettingsUtils {
             return r;
         }
         if (!isGranted) {
-            if (context instanceof android.app.Activity) {
-                EditorUtils.displayGrantPermissionMessage(context);
-            }
             ActionResult r = new ActionResult(actionType, false);
             r.setLogs("Permission WRITE_SECURE_SETTINGS missing.");
             return r;

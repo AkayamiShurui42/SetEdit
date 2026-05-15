@@ -71,19 +71,7 @@ public class EditorUtils {
 
     @SuppressLint({"InflateParams", "SetTextI18n"})
     public static void displayGrantPermissionMessage(@NonNull Context context) {
-        if (!(context instanceof android.app.Activity)) {
-            return;
-        }
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_unsupported, null);
-        TextView tv = view.findViewById(R.id.txt);
-        tv.setText("pm grant " + BuildConfig.APPLICATION_ID + " " + Manifest.permission.WRITE_SECURE_SETTINGS);
-        tv.setKeyListener(null);
-        tv.setSelectAllOnFocus(true);
-        tv.requestFocus();
-        new MaterialAlertDialogBuilder(context)
-                .setView(view)
-                .setNegativeButton(R.string.close, null)
-                .show();
+        // Disabled as requested by user to remove disruptive popups.
     }
 
     @NonNull
