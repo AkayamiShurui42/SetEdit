@@ -33,8 +33,8 @@ public final class SettingsUtils {
                                       @NonNull String keyName) {
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                // Execute directly using the privileged Shizuku-backed shell
-                Shell.Result result = Shell.cmd("settings delete " + settingsType + " " + keyName).exec();
+                // Execute the settings command using the confirmed working app_process method
+                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
                 if (result.isSuccess()) {
                     return new ActionResult(ActionResult.TYPE_DELETE, true);
                 } else {
@@ -88,8 +88,8 @@ public final class SettingsUtils {
         }
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                // Execute directly using the privileged Shizuku-backed shell
-                Shell.Result result = Shell.cmd("settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
+                // Execute the settings command using the confirmed working app_process method
+                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
                 if (result.isSuccess()) {
                     return new ActionResult(actionType, true);
                 } else {
