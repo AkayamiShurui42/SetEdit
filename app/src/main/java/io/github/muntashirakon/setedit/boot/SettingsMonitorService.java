@@ -13,12 +13,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationChannelCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
+import com.topjohnwu.superuser.Shell;
 
 import java.util.Map;
 
@@ -27,6 +30,8 @@ import io.github.muntashirakon.setedit.EditorUtils;
 import io.github.muntashirakon.setedit.R;
 import io.github.muntashirakon.setedit.SettingsType;
 import io.github.muntashirakon.setedit.TableType;
+import io.github.muntashirakon.setedit.utils.AndroidPropertyUtils;
+import io.github.muntashirakon.setedit.utils.ActionResult;
 import io.github.muntashirakon.setedit.utils.SettingsUtils;
 import rikka.shizuku.Shizuku;
 
@@ -39,6 +44,15 @@ public class SettingsMonitorService extends Service {
     private SettingsObserver secureObserver;
     private SettingsObserver globalObserver;
     private Shizuku.OnBinderReceivedListener shizukuListener;
+    private final Runnable periodicCheck = new Runnable() {
+        @Override
+        public void run() {
+            applyAllLockedSettings();
+            if (handler != null) {
+                handler.postDelayed(this, 30000); // Check every 30 seconds
+            }
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -67,6 +81,7 @@ public class SettingsMonitorService extends Service {
         getContentResolver().registerContentObserver(Settings.Global.CONTENT_URI, true, globalObserver);
 
         applyAllLockedSettings();
+        handler.postDelayed(periodicCheck, 30000);
 
         shizukuListener = new Shizuku.OnBinderReceivedListener() {
             @Override
@@ -94,6 +109,7 @@ public class SettingsMonitorService extends Service {
             String key = fullKey.substring(0, lastColon);
             String tableType = fullKey.substring(lastColon + 1);
             String settingsType = null;
+            String finalSavedValue = String.valueOf(entry.getValue());
 
             if (TableType.TABLE_SYSTEM.equals(tableType)) {
                 settingsType = SettingsType.SYSTEM_SETTINGS;
@@ -101,12 +117,30 @@ public class SettingsMonitorService extends Service {
                 settingsType = SettingsType.SECURE_SETTINGS;
             } else if (TableType.TABLE_GLOBAL.equals(tableType)) {
                 settingsType = SettingsType.GLOBAL_SETTINGS;
+            } else if (TableType.TABLE_PROPERTIES.equals(tableType)) {
+                checkAndRevertProperty(key, finalSavedValue);
             }
 
             if (settingsType != null) {
                 checkAndRevertSetting(key, settingsType, tableType);
             }
         }
+    }
+
+    private void checkAndRevertProperty(String key, String savedValue) {
+        new Thread(() -> {
+            Shell.Result result = Shell.cmd("getprop " + key).exec();
+            String currentValue = TextUtils.join("", result.getOut()).trim();
+            if (!savedValue.equals(currentValue)) {
+                Log.i(TAG, "Locked property changed: " + key + ". Reverting to " + savedValue + " (Current: " + currentValue + ")");
+                ActionResult updateResult = AndroidPropertyUtils.update(key, savedValue);
+                if (!updateResult.successful) {
+                    Log.e(TAG, "Failed to revert locked property " + key + ": " + updateResult.getLogs());
+                } else {
+                    Log.i(TAG, "Successfully reverted locked property: " + key);
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -117,6 +151,9 @@ public class SettingsMonitorService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (handler != null) {
+            handler.removeCallbacks(periodicCheck);
+        }
         if (systemObserver != null) getContentResolver().unregisterContentObserver(systemObserver);
         if (secureObserver != null) getContentResolver().unregisterContentObserver(secureObserver);
         if (globalObserver != null) getContentResolver().unregisterContentObserver(globalObserver);
@@ -195,7 +232,12 @@ public class SettingsMonitorService extends Service {
                 Log.i(TAG, "Locked setting changed: " + key + ". Reverting to " + finalSavedValue);
                 handler.postDelayed(() -> {
                     new Thread(() -> {
-                        SettingsUtils.update(SettingsMonitorService.this, settingsType, key, finalSavedValue);
+                        ActionResult result = SettingsUtils.update(SettingsMonitorService.this, settingsType, key, finalSavedValue);
+                        if (!result.successful) {
+                            Log.e(TAG, "Failed to revert locked setting " + key + ": " + result.getLogs());
+                        } else {
+                            Log.i(TAG, "Successfully reverted locked setting: " + key);
+                        }
                     }).start();
                 }, 500); // 0.5s delay to make sure system finishes its update first
             }

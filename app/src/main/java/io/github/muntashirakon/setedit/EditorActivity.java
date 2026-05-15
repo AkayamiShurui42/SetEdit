@@ -81,14 +81,7 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
             });
 
     private void displayOneTimeWarningDialog() {
-        final SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        boolean hasWarned = preferences.getBoolean("has_warned", false);
-        if (hasWarned) return;
-        new MaterialAlertDialogBuilder(this)
-                .setMessage(R.string.startup_warning)
-                .setNegativeButton(R.string.close, null)
-                .show();
-        preferences.edit().putBoolean("has_warned", true).apply();
+        // Disabled as requested by user to remove disruptive popups.
     }
 
     public void addNewItemDialog() {
@@ -170,14 +163,17 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
                 if (isGranted == null) return;
                 if (isGranted) {
                     addNewItemDialog();
-                } else {
-                    EditorUtils.displayGrantPermissionMessage(this);
                 }
             }
         });
         UiUtils.applyWindowInsetsAsMargin(addNewItem);
         // Display warning if it's the first time
         displayOneTimeWarningDialog();
+
+        if (rikka.shizuku.Shizuku.pingBinder() && rikka.shizuku.Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            rikka.shizuku.Shizuku.requestPermission(EditorUtils.REQUEST_CODE_SHIZUKU);
+        }
+
         // Refresh settings after 5 seconds
         timer = new Timer();
         timer.schedule(new TimerTask() {

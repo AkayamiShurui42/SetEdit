@@ -31,15 +31,17 @@ public final class SettingsUtils {
     @NonNull
     public static ActionResult delete(@NonNull Context context, @SettingsType String settingsType,
                                       @NonNull String keyName) {
-        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
-            Shell.Result result = Shell.cmd("settings delete " + settingsType + " " + keyName).exec();
-            ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
-            r.setLogs(TextUtils.join("\n", result.getErr()));
-            return r;
-        } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
+                // Execute the settings command using the confirmed working app_process method
                 Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings delete " + settingsType + " " + keyName).exec();
-                return new ActionResult(ActionResult.TYPE_DELETE, result.isSuccess());
+                if (result.isSuccess()) {
+                    return new ActionResult(ActionResult.TYPE_DELETE, true);
+                } else {
+                    ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
+                    r.setLogs(TextUtils.join("\n", result.getErr()));
+                    return r;
+                }
             } catch(Exception e) {
                 ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
                 r.setLogs(e.getMessage());
@@ -47,17 +49,21 @@ public final class SettingsUtils {
             }
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
-        if (isGranted == null) return new ActionResult(ActionResult.TYPE_DELETE, false);
+        if (isGranted == null) {
+            ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
+            r.setLogs("Shizuku/Permission request in progress...");
+            return r;
+        }
         if (!isGranted) {
-            if (context instanceof android.app.Activity) {
-                EditorUtils.displayGrantPermissionMessage(context);
-            }
-            return new ActionResult(ActionResult.TYPE_DELETE, false);
+            ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
+            r.setLogs("Permission WRITE_SECURE_SETTINGS missing.");
+            return r;
         }
         ContentResolver contentResolver = context.getContentResolver();
         try {
-            String[] strArr = {keyName};
-            contentResolver.delete(Uri.parse("content://settings/" + settingsType), "name = ?", strArr);
+            ContentValues contentValues = new ContentValues(2);
+            contentValues.put("name", keyName);
+            contentResolver.delete(Uri.parse("content://settings/" + settingsType), "name = ?", new String[]{keyName});
             return new ActionResult(ActionResult.TYPE_DELETE, true);
         } catch (SecurityException se) {
             Log.e("SettingsUtils", "Permission denied for: " + keyName, se);
@@ -80,15 +86,17 @@ public final class SettingsUtils {
             // Null just clears value not the key
             newValue = "";
         }
-        if (Boolean.TRUE.equals(Shell.isAppGrantedRoot())) {
-            Shell.Result result = Shell.cmd("settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
-            ActionResult r = new ActionResult(actionType, result.isSuccess());
-            r.setLogs(TextUtils.join("\n", result.getErr()));
-            return r;
-        } else if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
+                // Execute the settings command using the confirmed working app_process method
                 Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin com.android.commands.settings.Settings put " + settingsType + " " + keyName + " \"" + newValue + "\"").exec();
-                return new ActionResult(actionType, result.isSuccess());
+                if (result.isSuccess()) {
+                    return new ActionResult(actionType, true);
+                } else {
+                    ActionResult r = new ActionResult(actionType, false);
+                    r.setLogs(TextUtils.join("\n", result.getErr()));
+                    return r;
+                }
             } catch(Exception e) {
                 ActionResult r = new ActionResult(actionType, false);
                 r.setLogs(e.getMessage());
@@ -96,27 +104,22 @@ public final class SettingsUtils {
             }
         }
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
-        if (isGranted == null) return new ActionResult(actionType, false);
+        if (isGranted == null) {
+            ActionResult r = new ActionResult(actionType, false);
+            r.setLogs("Shizuku/Permission request in progress...");
+            return r;
+        }
         if (!isGranted) {
-            if (context instanceof android.app.Activity) {
-                EditorUtils.displayGrantPermissionMessage(context);
-            }
-            return new ActionResult(actionType, false);
+            ActionResult r = new ActionResult(actionType, false);
+            r.setLogs("Permission WRITE_SECURE_SETTINGS missing.");
+            return r;
         }
         ContentResolver contentResolver = context.getContentResolver();
         try {
-            if (SettingsType.SYSTEM_SETTINGS.equals(settingsType)) {
-                android.provider.Settings.System.putString(contentResolver, keyName, newValue);
-            } else if (SettingsType.SECURE_SETTINGS.equals(settingsType)) {
-                android.provider.Settings.Secure.putString(contentResolver, keyName, newValue);
-            } else if (SettingsType.GLOBAL_SETTINGS.equals(settingsType)) {
-                android.provider.Settings.Global.putString(contentResolver, keyName, newValue);
-            } else {
-                ContentValues contentValues = new ContentValues(2);
-                contentValues.put("name", keyName);
-                contentValues.put("value", newValue);
-                contentResolver.insert(Uri.parse("content://settings/" + settingsType), contentValues);
-            }
+            ContentValues contentValues = new ContentValues(2);
+            contentValues.put("name", keyName);
+            contentValues.put("value", newValue);
+            contentResolver.insert(Uri.parse("content://settings/" + settingsType), contentValues);
             return new ActionResult(actionType, true);
         } catch (SecurityException se) {
             Log.e("SettingsUtils", "Permission denied for: " + keyName, se);

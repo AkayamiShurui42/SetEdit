@@ -17,7 +17,6 @@ import com.topjohnwu.superuser.Shell;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Date;
 
 public class App extends Application {

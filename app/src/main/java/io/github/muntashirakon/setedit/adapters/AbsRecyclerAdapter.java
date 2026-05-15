@@ -211,10 +211,7 @@ public abstract class AbsRecyclerAdapter extends RecyclerView.Adapter<AbsRecycle
     }
 
     protected void setMessage(CharSequence charSequence) {
-        new MaterialAlertDialogBuilder(context)
-                .setMessage(charSequence)
-                .setNegativeButton(R.string.close, null)
-                .show();
+        // Disabled as requested by user to remove disruptive popups.
     }
 
     private void openHelp(String keyName) {

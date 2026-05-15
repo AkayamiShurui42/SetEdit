@@ -8,6 +8,7 @@ import android.widget.Filter;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,34 +64,58 @@ class LockedSettingsRecyclerAdapter extends AbsRecyclerAdapter {
 
     @Override
     public void update(String keyName, String newValue) {
-        SharedPreferences lockedPrefs = context.getSharedPreferences("locked_settings", Context.MODE_PRIVATE);
-        lockedPrefs.edit().putString(keyName, newValue).apply();
+        try {
+            SharedPreferences lockedPrefs = context.getSharedPreferences("locked_settings", Context.MODE_PRIVATE);
+            lockedPrefs.edit().putString(keyName, newValue).apply();
 
-        // Also update the actual setting
-        int lastColon = keyName.lastIndexOf(':');
-        if (lastColon > 0 && lastColon < keyName.length() - 1) {
-            String key = keyName.substring(0, lastColon);
-            String tableType = keyName.substring(lastColon + 1);
-            SettingsUtils.update(context, tableType, key, newValue);
+            // Also update the actual setting
+            int lastColon = keyName.lastIndexOf(':');
+            if (lastColon > 0 && lastColon < keyName.length() - 1) {
+                String key = keyName.substring(0, lastColon);
+                String tableType = keyName.substring(lastColon + 1);
+                if ("property".equals(tableType)) {
+                    io.github.muntashirakon.setedit.utils.AndroidPropertyUtils.update(key, newValue);
+                } else {
+                    SettingsUtils.update(context, tableType, key, newValue);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         refresh();
     }
 
     @Override
     public void delete(String keyName) {
-        SharedPreferences lockedPrefs = context.getSharedPreferences("locked_settings", Context.MODE_PRIVATE);
-        lockedPrefs.edit().remove(keyName).apply();
+        try {
+            SharedPreferences lockedPrefs = context.getSharedPreferences("locked_settings", Context.MODE_PRIVATE);
+            lockedPrefs.edit().remove(keyName).apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         refresh();
     }
 
     @Override
     public Pair<String, String> getItem(int position) {
-        return mLockedItems.get(mMatchedIndexes.get(position));
+        if (position >= 0 && position < mMatchedIndexes.size()) {
+            int index = mMatchedIndexes.get(position);
+            if (index >= 0 && index < mLockedItems.size()) {
+                return mLockedItems.get(index);
+            }
+        }
+        return new Pair<>("", "");
     }
 
     @Override
     public long getItemId(int position) {
-        return mLockedItems.get(mMatchedIndexes.get(position)).first.hashCode();
+        if (position >= 0 && position < mMatchedIndexes.size()) {
+            int index = mMatchedIndexes.get(position);
+            if (index >= 0 && index < mLockedItems.size()) {
+                return mLockedItems.get(index).first.hashCode();
+            }
+        }
+        return RecyclerView.NO_ID;
     }
 
     @Override
