@@ -97,12 +97,24 @@ class LockedSettingsRecyclerAdapter extends AbsRecyclerAdapter {
 
     @Override
     public Pair<String, String> getItem(int position) {
-        return mLockedItems.get(mMatchedIndexes.get(position));
+        if (position >= 0 && position < mMatchedIndexes.size()) {
+            int index = mMatchedIndexes.get(position);
+            if (index >= 0 && index < mLockedItems.size()) {
+                return mLockedItems.get(index);
+            }
+        }
+        return new Pair<>("", "");
     }
 
     @Override
     public long getItemId(int position) {
-        return mLockedItems.get(mMatchedIndexes.get(position)).first.hashCode();
+        if (position >= 0 && position < mMatchedIndexes.size()) {
+            int index = mMatchedIndexes.get(position);
+            if (index >= 0 && index < mLockedItems.size()) {
+                return mLockedItems.get(index).first.hashCode();
+            }
+        }
+        return RecyclerView.NO_ID;
     }
 
     @Override

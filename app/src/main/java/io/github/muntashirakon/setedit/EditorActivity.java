@@ -81,14 +81,7 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
             });
 
     private void displayOneTimeWarningDialog() {
-        final SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        boolean hasWarned = preferences.getBoolean("has_warned", false);
-        if (hasWarned) return;
-        new MaterialAlertDialogBuilder(this)
-                .setMessage(R.string.startup_warning)
-                .setNegativeButton(R.string.close, null)
-                .show();
-        preferences.edit().putBoolean("has_warned", true).apply();
+        // Disabled as requested by user to remove disruptive popups.
     }
 
     public void addNewItemDialog() {
