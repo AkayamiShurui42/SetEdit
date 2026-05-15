@@ -178,6 +178,11 @@ public class EditorActivity extends AppCompatActivity implements AdapterView.OnI
         UiUtils.applyWindowInsetsAsMargin(addNewItem);
         // Display warning if it's the first time
         displayOneTimeWarningDialog();
+
+        if (rikka.shizuku.Shizuku.pingBinder() && rikka.shizuku.Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            rikka.shizuku.Shizuku.requestPermission(EditorUtils.REQUEST_CODE_SHIZUKU);
+        }
+
         // Refresh settings after 5 seconds
         timer = new Timer();
         timer.schedule(new TimerTask() {
