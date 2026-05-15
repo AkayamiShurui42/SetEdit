@@ -29,6 +29,7 @@
     <string name="boot_items">Boot Items</string>
     <string name="perform_this_action_on_reboot">Perform this action on reboot</string>
     <string name="shortcuts">Shortcuts</string>
+    <string name="locked_settings">Locked Settings</string>
     <string name="perform_this_action_via_shortcut">Perform this action via a shortcut</string>
     <string name="select_shortcuts">Select shortcuts</string>
     <string name="create_new_shortcut">Create a new shortcut</string>

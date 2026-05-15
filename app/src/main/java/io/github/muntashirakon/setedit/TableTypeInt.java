@@ -13,4 +13,5 @@ public @interface TableTypeInt {
     int TABLE_ENV = 5;
     int TABLE_BOOT = 6;
     int TABLE_SHORTCUTS = 7;
+    int TABLE_LOCKED = 8;
 }

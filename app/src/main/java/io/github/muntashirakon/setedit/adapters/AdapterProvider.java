@@ -30,6 +30,8 @@ public class AdapterProvider {
                 return new BootItemsRecyclerAdapter(context);
             case TableTypeInt.TABLE_SHORTCUTS:
                 return new ShortcutsRecyclerAdapter(context);
+            case TableTypeInt.TABLE_LOCKED:
+                return new LockedSettingsRecyclerAdapter(context);
             default:
                 throw new IllegalArgumentException("Invalid position " + position);
         }
