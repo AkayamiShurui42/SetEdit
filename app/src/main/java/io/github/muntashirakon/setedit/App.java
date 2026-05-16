@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.os.Build;
 import com.google.android.material.color.DynamicColors;
 import com.topjohnwu.superuser.Shell;
+import com.topjohnwu.superuser.shizuku.ShizukuShell;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,6 +26,7 @@ public class App extends Application {
         Shell.enableVerboseLogging = BuildConfig.DEBUG;
         Shell.setDefaultBuilder(Shell.Builder.create()
                 .setFlags(Shell.FLAG_MOUNT_MASTER)
+                .setShell(ShizukuShell.class)
                 .setTimeout(10));
     }
 
