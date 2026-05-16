@@ -13,7 +13,7 @@ public final class AndroidPropertyUtils {
     public static ActionResult update(@NonNull String keyName, @NonNull String newValue) {
         if (rikka.shizuku.Shizuku.pingBinder() && rikka.shizuku.Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                rikka.shizuku.ShizukuRemoteProcess process = Shizuku.newProcess(new String[]{"setprop", keyName, newValue}, null, null);
+                rikka.shizuku.ShizukuRemoteProcess process = io.github.muntashirakon.setedit.EditorUtils.newShizukuProcess(new String[]{"setprop", keyName, newValue}, null, null);
                 int exitCode = process.waitFor();
                 if (exitCode == 0) {
                     return new ActionResult(ActionResult.TYPE_UPDATE, true);

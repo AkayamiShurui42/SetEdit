@@ -53,8 +53,7 @@ class BootAndLockedRecyclerAdapter extends AbsRecyclerAdapter {
         allItems.clear();
         
         // Add Boot Items
-        List<ActionItem> bootItems = BootUtils.getBootItems(context);
-        for (ActionItem item : bootItems) {
+        for (ActionItem item : BootUtils.getBootItems(context)) {
             allItems.add(new UnifiedItem(false, "[Boot] " + item.table + " – " + item.name, getItemValue(item), item, null));
         }
 
