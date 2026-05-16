@@ -64,7 +64,7 @@ public class BootService extends Service {
                 } else {
                     Log.i(TAG, "Finished with errors!");
                     Intent editorIntent = new Intent(this, EditorActivity.class);
-                    editorIntent.putExtra(EditorActivity.EXTRA_TABLE, TableTypeInt.TABLE_BOOT);
+                    editorIntent.putExtra(EditorActivity.EXTRA_TABLE, TableTypeInt.TABLE_BOOT_AND_LOCKED);
                     PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, editorIntent, PendingIntent.FLAG_IMMUTABLE);
                     Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                             .setAutoCancel(true)
