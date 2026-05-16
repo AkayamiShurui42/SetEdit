@@ -26,12 +26,10 @@ public class AdapterProvider {
                 return new JavaPropertiesRecyclerAdapter(context);
             case TableTypeInt.TABLE_ENV:
                 return new LinuxEnvironmentsRecyclerAdapter(context);
-            case TableTypeInt.TABLE_BOOT:
-                return new BootItemsRecyclerAdapter(context);
+            case TableTypeInt.TABLE_BOOT_AND_LOCKED:
+                return new BootAndLockedRecyclerAdapter(context);
             case TableTypeInt.TABLE_SHORTCUTS:
                 return new ShortcutsRecyclerAdapter(context);
-            case TableTypeInt.TABLE_LOCKED:
-                return new LockedSettingsRecyclerAdapter(context);
             default:
                 throw new IllegalArgumentException("Invalid position " + position);
         }

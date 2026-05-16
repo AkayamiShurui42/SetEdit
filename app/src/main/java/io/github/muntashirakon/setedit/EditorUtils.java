@@ -116,8 +116,8 @@ public class EditorUtils {
                 return TableType.TABLE_JAVA;
             case TableTypeInt.TABLE_ENV:
                 return TableType.TABLE_ENV;
-            case TableTypeInt.TABLE_BOOT:
-                return TableType.TABLE_BOOT;
+            case TableTypeInt.TABLE_BOOT_AND_LOCKED:
+                return TableType.TABLE_BOOT_AND_LOCKED;
             case TableTypeInt.TABLE_SHORTCUTS:
                 return TableType.TABLE_SHORTCUTS;
             default:

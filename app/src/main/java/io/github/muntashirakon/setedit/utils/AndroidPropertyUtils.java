@@ -13,13 +13,19 @@ public final class AndroidPropertyUtils {
     public static ActionResult update(@NonNull String keyName, @NonNull String newValue) {
         if (rikka.shizuku.Shizuku.pingBinder() && rikka.shizuku.Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             try {
-                // Execute the setprop command using the confirmed working app_process method
-                Shell.Result result = Shell.cmd("app_process -Djava.class.path=/data/local/tmp/shizuku/shizuku.apk /system/bin setprop " + keyName + " \"" + newValue + "\"").exec();
-                if (result.isSuccess()) {
+                rikka.shizuku.ShizukuRemoteProcess process = Shizuku.newProcess(new String[]{"setprop", keyName, newValue}, null, null);
+                int exitCode = process.waitFor();
+                if (exitCode == 0) {
                     return new ActionResult(ActionResult.TYPE_UPDATE, true);
                 } else {
                     ActionResult r = new ActionResult(ActionResult.TYPE_UPDATE, false);
-                    r.setLogs(TextUtils.join("\n", result.getErr()));
+                    java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getErrorStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line).append("\n");
+                    }
+                    r.setLogs(sb.toString().trim());
                     return r;
                 }
             } catch (Exception e) {

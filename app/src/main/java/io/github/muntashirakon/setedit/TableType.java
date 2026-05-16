@@ -11,7 +11,6 @@ public @interface TableType {
     String TABLE_PROPERTIES = "property";
     String TABLE_JAVA = "java";
     String TABLE_ENV = "env";
-    String TABLE_BOOT = "boot";
+    String TABLE_BOOT_AND_LOCKED = "boot_and_locked";
     String TABLE_SHORTCUTS = "shortcuts";
-    String TABLE_LOCKED = "locked";
 }
