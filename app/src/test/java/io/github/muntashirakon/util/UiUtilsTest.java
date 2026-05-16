@@ -1,39 +1,31 @@
 package io.github.muntashirakon.util;
 
-<<<<<<< test-uiutils-pxtodp-8515587305831065790
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import android.content.Context;
-import android.content.res.Resources;
-import android.util.DisplayMetrics;
-
-import org.junit.Test;
-=======
-import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+
 import org.mockito.Mockito;
 import org.mockito.MockedStatic;
->>>>>>> master
 
 public class UiUtilsTest {
 
     @Test
-<<<<<<< test-uiutils-pxtodp-8515587305831065790
     public void pxToDp_convertsCorrectly() {
         // Arrange
-        Context mockContext = mock(Context.class);
-        Resources mockResources = mock(Resources.class);
-        DisplayMetrics mockDisplayMetrics = mock(DisplayMetrics.class);
+        Context mockContext = Mockito.mock(Context.class);
+        Resources mockResources = Mockito.mock(Resources.class);
+        DisplayMetrics mockDisplayMetrics = Mockito.mock(DisplayMetrics.class);
         mockDisplayMetrics.density = 2.0f; // 2 pixels = 1 dp
 
-        when(mockContext.getResources()).thenReturn(mockResources);
-        when(mockResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
+        Mockito.when(mockContext.getResources()).thenReturn(mockResources);
+        Mockito.when(mockResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
 
         // Act
         int resultDp = UiUtils.pxToDp(mockContext, 10);
@@ -45,13 +37,13 @@ public class UiUtilsTest {
     @Test
     public void pxToDp_convertsZero() {
         // Arrange
-        Context mockContext = mock(Context.class);
-        Resources mockResources = mock(Resources.class);
-        DisplayMetrics mockDisplayMetrics = mock(DisplayMetrics.class);
+        Context mockContext = Mockito.mock(Context.class);
+        Resources mockResources = Mockito.mock(Resources.class);
+        DisplayMetrics mockDisplayMetrics = Mockito.mock(DisplayMetrics.class);
         mockDisplayMetrics.density = 2.0f;
 
-        when(mockContext.getResources()).thenReturn(mockResources);
-        when(mockResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
+        Mockito.when(mockContext.getResources()).thenReturn(mockResources);
+        Mockito.when(mockResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
 
         // Act
         int resultDp = UiUtils.pxToDp(mockContext, 0);
@@ -63,20 +55,22 @@ public class UiUtilsTest {
     @Test
     public void pxToDp_convertsNegative() {
         // Arrange
-        Context mockContext = mock(Context.class);
-        Resources mockResources = mock(Resources.class);
-        DisplayMetrics mockDisplayMetrics = mock(DisplayMetrics.class);
+        Context mockContext = Mockito.mock(Context.class);
+        Resources mockResources = Mockito.mock(Resources.class);
+        DisplayMetrics mockDisplayMetrics = Mockito.mock(DisplayMetrics.class);
         mockDisplayMetrics.density = 1.5f;
 
-        when(mockContext.getResources()).thenReturn(mockResources);
-        when(mockResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
+        Mockito.when(mockContext.getResources()).thenReturn(mockResources);
+        Mockito.when(mockResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
 
         // Act
         int resultDp = UiUtils.pxToDp(mockContext, -30);
 
         // Assert
         assertEquals("-30px should convert to -20dp at 1.5 density", -20, resultDp);
-=======
+    }
+
+    @Test
     public void testDpToPxInt() {
         Context context = Mockito.mock(Context.class);
         Resources resources = Mockito.mock(Resources.class);
@@ -131,17 +125,41 @@ public class UiUtilsTest {
     }
 
     @Test
-    public void testPxToDp() {
-        Context context = Mockito.mock(Context.class);
-        Resources resources = Mockito.mock(Resources.class);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        displayMetrics.density = 2.0f;
+    public void testIsDarkModeOnSystem_Yes() {
+        Resources mockResources = Mockito.mock(Resources.class);
+        Configuration mockConfig = new Configuration();
+        mockConfig.uiMode = Configuration.UI_MODE_NIGHT_YES;
+        Mockito.when(mockResources.getConfiguration()).thenReturn(mockConfig);
 
-        Mockito.when(context.getResources()).thenReturn(resources);
-        Mockito.when(resources.getDisplayMetrics()).thenReturn(displayMetrics);
+        try (MockedStatic<Resources> mockedResources = Mockito.mockStatic(Resources.class)) {
+            mockedResources.when(Resources::getSystem).thenReturn(mockResources);
+            assertTrue(UiUtils.isDarkModeOnSystem());
+        }
+    }
 
-        int result = UiUtils.pxToDp(context, 20);
-        assertEquals(10, result);
->>>>>>> master
+    @Test
+    public void testIsDarkModeOnSystem_No() {
+        Resources mockResources = Mockito.mock(Resources.class);
+        Configuration mockConfig = new Configuration();
+        mockConfig.uiMode = Configuration.UI_MODE_NIGHT_NO;
+        Mockito.when(mockResources.getConfiguration()).thenReturn(mockConfig);
+
+        try (MockedStatic<Resources> mockedResources = Mockito.mockStatic(Resources.class)) {
+            mockedResources.when(Resources::getSystem).thenReturn(mockResources);
+            assertFalse(UiUtils.isDarkModeOnSystem());
+        }
+    }
+
+    @Test
+    public void testIsDarkModeOnSystem_Undefined() {
+        Resources mockResources = Mockito.mock(Resources.class);
+        Configuration mockConfig = new Configuration();
+        mockConfig.uiMode = Configuration.UI_MODE_NIGHT_UNDEFINED;
+        Mockito.when(mockResources.getConfiguration()).thenReturn(mockConfig);
+
+        try (MockedStatic<Resources> mockedResources = Mockito.mockStatic(Resources.class)) {
+            mockedResources.when(Resources::getSystem).thenReturn(mockResources);
+            assertFalse(UiUtils.isDarkModeOnSystem());
+        }
     }
 }
