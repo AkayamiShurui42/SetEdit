@@ -124,4 +124,9 @@ public class EditorUtils {
                 throw new IllegalArgumentException("Invalid table type: " + tableTypeInt);
         }
     }
+
+    public static void requestAllPermissions(@NonNull Context context) {
+        checkSettingsPermission(context, SettingsType.SYSTEM_SETTINGS);
+        checkSettingsPermission(context, SettingsType.SECURE_SETTINGS);
+    }
 }
