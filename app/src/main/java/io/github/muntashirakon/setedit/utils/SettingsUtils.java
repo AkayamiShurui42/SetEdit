@@ -79,7 +79,6 @@ public final class SettingsUtils {
         if (privilegedResult != null) return privilegedResult;
 
         Boolean isGranted = EditorUtils.checkSettingsPermission(context, settingsType);
-...
         if (isGranted == null) {
             ActionResult r = new ActionResult(ActionResult.TYPE_DELETE, false);
             r.setLogs("Shizuku/Permission request in progress...");
